@@ -14,6 +14,7 @@ var client = new Twitter(keys.twitter)
 
 if (commandArg === 'my-tweets') {
 	console.log('my tweets')
+	printMyTweets()
 }
 else if (commandArg === 'spotify-this-song') {
 	console.log('spotify')
@@ -51,4 +52,20 @@ function getSongAttributes() {
 		console.log('Album Name: ' + songAlbum)
 		console.log('Preview URL: ' + songPreview)
 	  })
+}
+
+function printMyTweets() {
+	var params = {screen_name: 'b3ckyb33', count: 20};
+	client.get('statuses/user_timeline', params, function(error, tweets, response) {
+		if (!error) {	  
+			for (var i in tweets) {
+			  	var createTime = tweets[i].created_at
+			  	var tweet = tweets[i].text
+
+				// console.log(response.body[0].created_at)
+				console.log('date' +i+': ' + createTime)
+				console.log('tweet: ' + tweet)
+			}
+		}
+	})
 }
