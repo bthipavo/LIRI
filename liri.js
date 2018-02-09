@@ -12,6 +12,7 @@ var titleArg = process.argv[3]
 var spotify = new Spotify(keys.spotify)
 var client = new Twitter(keys.twitter)
 
+
 if (commandArg === 'my-tweets') {
 	console.log('my tweets')
 	printMyTweets()
@@ -19,6 +20,14 @@ if (commandArg === 'my-tweets') {
 else if (commandArg === 'spotify-this-song') {
 	console.log('spotify')
 	checkSongTitle()
+}
+else if (commandArg === 'movie-this') {
+	console.log('movie')
+	checkMovieTitle()
+}
+else if (commandArg === 'do-what-it-says') {
+	console.log('do what it says')
+	checkFile()
 }
 
 function checkSongTitle() {
@@ -33,6 +42,7 @@ function checkSongTitle() {
 }
 
 function getSongAttributes() {
+
 	spotify.search({type: 'track', query: titleArg, limit: 1}, function(err, data){
 		if (err) {
 		    return console.log('Error occurred: ' + err);
@@ -68,4 +78,40 @@ function printMyTweets() {
 			}
 		}
 	})
+}
+
+function checkMovieTitle() {
+	if (!titleArg) {
+		// console.log('there is no song name')
+		titleArg = 'Mr. Nobody'
+		checkMovie()
+	} else {
+		// console.log('song title ' + titleArg)
+		checkMovie()
+	}
+}
+function checkMovie() {
+	var omdbUrl = "http://www.omdbapi.com/?t=" + titleArg + "&y=&plot=short&apikey=trilogy"
+
+	request(omdbUrl, function(error, response, body) {
+ 	 // If the request is successful
+  		if (!error && response.statusCode === 200) {
+    // Parse the body of the site and recover just the imdbRating
+    // (Note: The syntax below for parsing isn't obvious. Just spend a few moments dissecting it).
+   	 		// console.log("movie: " + titleArg)
+   	 		// console.log("link: " + omdbUrl)
+   	 		console.log("Title: " + JSON.parse(body).Title)
+   	 		// console.log("Data: " + body)
+   	 		console.log("Release Year: " + JSON.parse(body).Year)
+   	 		console.log("IMDB Rating: " + JSON.parse(body).imdbRating)
+   	 		console.log("Rotten Tomatoes Rating: " + JSON.parse(body).Ratings)
+   	 		console.log("Country of Origin: " + JSON.parse(body).Country)
+   	 		console.log("Plot: " + JSON.parse(body).Plot)
+   	 		console.log("Actors: " + JSON.parse(body).Actors)
+  }
+})
+}
+
+function checkFile() {
+
 }
