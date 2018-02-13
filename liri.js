@@ -12,23 +12,27 @@ var titleArg = process.argv[3]
 var spotify = new Spotify(keys.spotify)
 var client = new Twitter(keys.twitter)
 
+checkCommand()
 
-if (commandArg === 'my-tweets') {
-	console.log('my tweets')
-	printMyTweets()
+function checkCommand() {
+	if (commandArg === 'my-tweets') {
+		// console.log('my tweets')
+		printMyTweets()
+	}
+	else if (commandArg === 'spotify-this-song') {
+		// console.log('spotify')
+		checkSongTitle()
+	}
+	else if (commandArg === 'movie-this') {
+		// console.log('movie')
+		checkMovieTitle()
+	}
+	else if (commandArg === 'do-what-it-says') {
+		// console.log('do what it says')
+		checkFile()
+	}
 }
-else if (commandArg === 'spotify-this-song') {
-	console.log('spotify')
-	checkSongTitle()
-}
-else if (commandArg === 'movie-this') {
-	console.log('movie')
-	checkMovieTitle()
-}
-else if (commandArg === 'do-what-it-says') {
-	console.log('do what it says')
-	checkFile()
-}
+
 
 function checkSongTitle() {
 	if (!titleArg) {
@@ -87,6 +91,10 @@ function checkMovieTitle() {
 		checkMovie()
 	} else {
 		// console.log('song title ' + titleArg)
+		titleArg = titleArg.replace(/>/g, '')
+		titleArg = titleArg.replace(/</g, '')
+		titleArg = titleArg.replace(/ /g, '+')
+		console.log('song title ' + titleArg)
 		checkMovie()
 	}
 }
@@ -98,20 +106,40 @@ function checkMovie() {
   		if (!error && response.statusCode === 200) {
     // Parse the body of the site and recover just the imdbRating
     // (Note: The syntax below for parsing isn't obvious. Just spend a few moments dissecting it).
-   	 		// console.log("movie: " + titleArg)
-   	 		// console.log("link: " + omdbUrl)
+   	 		console.log("movie: " + titleArg)
+   	 		console.log("link: " + omdbUrl)
    	 		console.log("Title: " + JSON.parse(body).Title)
    	 		// console.log("Data: " + body)
    	 		console.log("Release Year: " + JSON.parse(body).Year)
    	 		console.log("IMDB Rating: " + JSON.parse(body).imdbRating)
-   	 		console.log("Rotten Tomatoes Rating: " + JSON.parse(body).Ratings)
+   	 		console.log("Rotten Tomatoes Rating: " + JSON.parse(body).Ratings[1].Value)
    	 		console.log("Country of Origin: " + JSON.parse(body).Country)
    	 		console.log("Plot: " + JSON.parse(body).Plot)
    	 		console.log("Actors: " + JSON.parse(body).Actors)
+  } else {
+  	console.log("movie error")
+  	console.log("link: " + omdbUrl)
   }
 })
 }
 
 function checkFile() {
+	fs.readFile("random.txt", "utf8", function(error, data) {
+	// If the code experiences any errors it will log the error to the console.
+		if (error) {
+		return console.log(error)
+		}
+		// We will then print the contents of data
+		// console.log(data)
+		// Then split it by commas (to make it more readable)
+		var dataArr = data.split(",")
+		// We will then re-display the content as an array for later use.
+		// console.log(dataArr)
+		commandArg = dataArr[0]
+		titleArg = dataArr[1]
+		// console.log(commandArg)
+		// console.log(titleArg)
+		checkCommand()
+	})
 
 }
