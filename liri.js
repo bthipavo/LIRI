@@ -11,64 +11,71 @@ var titleArg = process.argv[3]
 
 var spotify = new Spotify(keys.spotify)
 var client = new Twitter(keys.twitter)
+var dataInfo = {}
 
-checkCommand()
+checkCommand(commandArg, titleArg, updateFile2)
 
-function checkCommand() {
+function checkCommand(commandArg, titleArg, updateFile) {
 	if (commandArg === 'my-tweets') {
 		// console.log('my tweets')
-		printMyTweets()
+		printMyTweets(commandArg, titleArg, updateFile)
 	}
 	else if (commandArg === 'spotify-this-song') {
 		// console.log('spotify')
-		checkSongTitle()
+		checkSongTitle(commandArg, titleArg, updateFile)
 	}
 	else if (commandArg === 'movie-this') {
 		// console.log('movie')
-		checkMovieTitle()
+		checkMovieTitle(commandArg, titleArg, updateFile)
 	}
 	else if (commandArg === 'do-what-it-says') {
 		// console.log('do what it says')
-		checkFile()
+		checkFile(commandArg, titleArg, updateFile)
 	}
+	updateFile(dataInfo)
 }
 
 
-function checkSongTitle() {
+function checkSongTitle(commandArg, titleArg, updateFile) {
 	if (!titleArg) {
 		// console.log('there is no song name')
 		titleArg = 'The Sign'
-		getSongAttributes()
+		getSongAttributes(commandArg, titleArg, updateFile)
 	} else {
 		// console.log('song title ' + titleArg)
-		getSongAttributes()
+		getSongAttributes(commandArg, titleArg, updateFile)
 	}
+	updateFile(dataInfo)
 }
 
-function getSongAttributes() {
+function getSongAttributes(commandArg, titleArg, updateFile) {
 
 	spotify.search({type: 'track', query: titleArg, limit: 1}, function(err, data){
 		if (err) {
 		    return console.log('Error occurred: ' + err);
 		  }
-		var songInfo = data.tracks.items[0]
-		var songArtist = data.tracks.items[0].artists[0].name
-		var songAlbum = data.tracks.items[0].album.name
-		var songPreview = data.tracks.items[0].preview_url
+		dataInfo = {
+		 	songArtist: data.tracks.items[0].artists[0].name,
+		 	songAlbum: data.tracks.items[0].album.name,
+		 	songPreview: data.tracks.items[0].preview_url,
+		 	songTitle: data.tracks.items[0].name
+		}
+		updateFile(dataInfo)
 
-		if (!songPreview) {
-			songPreview = 'None Available'
+		if (!dataInfo.songPreview) {
+			dataInfo.songPreview = 'None Available'
 		}
 
-		// console.log(songInfo)
-		console.log('Artist: ' + songArtist)
-		console.log('Song Title: ' + data.tracks.items[0].name)
-		console.log('Album Name: ' + songAlbum)
-		console.log('Preview URL: ' + songPreview)
+		// console.log(dataInfo)
+		console.log('Artist: ' + dataInfo.songArtist)
+		console.log('Song Title: ' + dataInfo.songTitle)
+		console.log('Album Name: ' + dataInfo.songAlbum)
+		console.log('Preview URL: ' + dataInfo.songPreview)
 	  })
+	
 }
 
-function printMyTweets() {
+function printMyTweets(commandArg, titleArg, updateFile) {
 	var params = {screen_name: 'b3ckyb33', count: 20};
 	client.get('statuses/user_timeline', params, function(error, tweets, response) {
 		if (!error) {	  
@@ -77,28 +84,34 @@ function printMyTweets() {
 			  	var tweet = tweets[i].text
 
 				// console.log(response.body[0].created_at)
-				console.log('date' +i+': ' + createTime)
-				console.log('tweet: ' + tweet)
+				dataInfo["createTime"+i] = createTime
+				dataInfo["tweet"+i] = tweet
+				// console.log('date' +i+': ' + createTime)
+				// console.log('tweet: ' + tweet)
 			}
 		}
+		console.log(dataInfo)
+		updateFile(dataInfo)
 	})
+	
 }
 
-function checkMovieTitle() {
+function checkMovieTitle(commandArg, titleArg, updateFile) {
 	if (!titleArg) {
 		// console.log('there is no song name')
 		titleArg = 'Mr. Nobody'
-		checkMovie()
+		checkMovie(commandArg, titleArg, updateFile)
 	} else {
 		// console.log('song title ' + titleArg)
 		titleArg = titleArg.replace(/>/g, '')
 		titleArg = titleArg.replace(/</g, '')
 		titleArg = titleArg.replace(/ /g, '+')
 		console.log('song title ' + titleArg)
-		checkMovie()
+		checkMovie(commandArg, titleArg, updateFile)
 	}
+	updateFile(dataInfo)
 }
-function checkMovie() {
+function checkMovie(commandArg, titleArg, updateFile) {
 	var omdbUrl = "http://www.omdbapi.com/?t=" + titleArg + "&y=&plot=short&apikey=trilogy"
 
 	request(omdbUrl, function(error, response, body) {
@@ -106,16 +119,20 @@ function checkMovie() {
   		if (!error && response.statusCode === 200) {
     // Parse the body of the site and recover just the imdbRating
     // (Note: The syntax below for parsing isn't obvious. Just spend a few moments dissecting it).
-   	 		console.log("movie: " + titleArg)
-   	 		console.log("link: " + omdbUrl)
-   	 		console.log("Title: " + JSON.parse(body).Title)
+   	 		dataInfo = {
+   	 			movie: titleArg,
+   	 			link: omdbUrl,
+   	 			Title: JSON.parse(body).Title,
    	 		// console.log("Data: " + body)
-   	 		console.log("Release Year: " + JSON.parse(body).Year)
-   	 		console.log("IMDB Rating: " + JSON.parse(body).imdbRating)
-   	 		console.log("Rotten Tomatoes Rating: " + JSON.parse(body).Ratings[1].Value)
-   	 		console.log("Country of Origin: " + JSON.parse(body).Country)
-   	 		console.log("Plot: " + JSON.parse(body).Plot)
-   	 		console.log("Actors: " + JSON.parse(body).Actors)
+   	 			ReleaseYear: JSON.parse(body).Year,
+   	 			IMDBRating: JSON.parse(body).imdbRating,
+   	 			RottenTomatoesRating: JSON.parse(body).Ratings[1].Value,
+   	 			CountryofOrigin: JSON.parse(body).Country,
+   	 			Plot: JSON.parse(body).Plot,
+   	 			Actors: JSON.parse(body).Actors
+   	 	}
+   	 	console.log(dataInfo)
+   	 	updateFile(dataInfo)
   } else {
   	console.log("movie error")
   	console.log("link: " + omdbUrl)
@@ -123,7 +140,7 @@ function checkMovie() {
 })
 }
 
-function checkFile() {
+function checkFile(commandArg, titleArg, updateFile) {
 	fs.readFile("random.txt", "utf8", function(error, data) {
 	// If the code experiences any errors it will log the error to the console.
 		if (error) {
@@ -139,7 +156,31 @@ function checkFile() {
 		titleArg = dataArr[1]
 		// console.log(commandArg)
 		// console.log(titleArg)
-		checkCommand()
+		checkCommand(commandArg, titleArg, updateFile)
 	})
 
+}
+ 
+function updateFile2(dataInfo) {
+	console.log("print")
+	if(isEmpty(dataInfo)) {
+		console.log("still empty")
+	} else {
+		fs.appendFile("log.txt", commandArg + " " + titleArg + "\r\n" + JSON.stringify(dataInfo) + "\r\n", function(err) {
+				// If the code experiences any errors it will log the error to the console.
+				if (err) {
+				return console.log(err)
+				}
+			console.log("log.txt was updated!")
+			console.log(dataInfo)
+		})
+	}
+}
+
+function isEmpty(obj) {
+    for(var key in obj) {
+        if(obj.hasOwnProperty(key))
+            return false;
+    }
+    return true;
 }
