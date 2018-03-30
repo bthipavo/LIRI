@@ -15,5 +15,11 @@
   "bugs": {
     "url": "https://github.com/bthipavo/LIRI/issues"
   },
-  "homepage": "https://github.com/bthipavo/LIRI#readme"
+  "homepage": "https://github.com/bthipavo/LIRI#readme",
+  "dependencies": {
+    "dotenv": "^5.0.1",
+    "node-spotify-api": "^1.0.7",
+    "request": "^2.85.0",
+    "twitter": "^1.7.1"
+  }
 }
